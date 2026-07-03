@@ -2,11 +2,3 @@ theme: jekyll-theme-architect
 title: Vitali Brunovski
 description: Cybersecurity & API Security Expert
 
-# Настройка меню
-navigation:
-  - title: Главная
-    url: /
-  - title: GitHub
-    url: https://github.com/vbrunovski
-  - title: Telegram
-    url: https://t.me/ТВОЙ_НИК
