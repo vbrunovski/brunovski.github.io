@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engineering Secure REST APIs | Vitali Brunovski</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 40px auto; padding: 0 20px; }
+        .back-link { margin-bottom: 20px; display: block; font-weight: bold; }
+        h1, h2, h3 { color: #111; margin-top: 30px; }
+        pre { background: #272822; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; font-family: monospace; }
+        code { background: #eee; padding: 2px 4px; border-radius: 3px; font-family: monospace; }
+    </style>
+</head>
+<body>
+
+<a href="articles.html" class="back-link">← Back to Articles</a>
+
+<article>
+    <h1>Engineering Secure REST APIs: A Practical Guide for 2026</h1>
+    <p><i>Published: July 03, 2026</i></p>
+
+    <h2>Introduction: The API Threat Landscape</h2>
+    <p>In 2026, the architecture of web applications has shifted entirely to API-first communication. Microservices, headless CMS, and mobile-first strategies rely on REST APIs as the backbone. Many developers focus purely on performance and latency, ignoring the fact that REST APIs have become the primary attack vector for modern data breaches. As a security auditor, I see that 9 out of 10 APIs fail to implement basic security controls beyond standard HTTPS.</p>
+
+    <h2>1. The Authentication and Authorization Gap</h2>
+    <p>Authentication (AuthN) is not Authorization (AuthZ). Authentication confirms identity; Authorization dictates permissions. The most critical vulnerability in modern APIs is <b>BOLA (Broken Object Level Authorization)</b>. This occurs when an endpoint (e.g., <code>/api/orders/{order_id}</code>) fetches data without verifying that the authenticated user is the owner of that specific order.</p>
+    <p><b>Technical Correction:</b> Never trust client-provided IDs. Your backend must cross-reference the user's session token with the resource owner's ID in the database on <i>every single request</i>. This check must happen at the controller level. Use middleware to intercept requests and ensure the 'user_id' in the claims matches the 'user_id' of the resource being requested.</p>
+
+    <h2>2. OWASP API Top 10: Critical Vulnerabilities</h2>
+    <p>The OWASP API Top 10 maps common engineering failures. <b>BFLA (Broken Function Level Authorization)</b> is when an API allows a standard user to call administrative endpoints (e.g., <code>DELETE /api/users/all</code>) because the endpoint is discoverable. This is often caused by relying on UI-level hiding rather than server-side enforcement.</p>
+    <p>Another issue is <b>Excessive Data Exposure</b>. Developers often return the entire database object (e.g., <code>User{id, email, password_hash, ssn, role}</code>) and rely on the frontend to hide sensitive fields. This is a severe error. Always implement Data Transfer Objects (DTOs) or use serialization libraries that define exactly which fields are exposed in the JSON response.</p>
+
+    <h2>3. Robust Input Validation</h2>
+    <p>Input validation is your first line of defense. Never trust data coming from the client. If your API accepts JSON, implement strict schema validation. Define constraints: length, type, pattern, and range. If a request sends a string where an integer is expected, the API must reject it with a 400 Bad Request error. Do not rely on ORM validation alone, as it might be bypassed by complex payloads.</p>
+
+    <h2>4. Advanced Automation: Playwright and Security Pipelines</h2>
+    <p>Security testing cannot be manual. You need automated tests that run in your CI/CD pipeline. Use Playwright to simulate authenticated user interactions that test edge cases in authorization. Use k6 or JMeter for load testing to find where your API bottlenecks are.</p>
+    
+    <pre><code>// Testing if a regular user can access admin data
+test('ensure regular user cannot access admin API', async ({ request }) => {
+  const userToken = await loginAsRegularUser();
+  const response = await request.get('/api/admin/system-stats', {
+    headers: { 'Authorization': `Bearer ${userToken}` }
+  });
+  expect(response.status()).toBe(403); // Forbidden
+});</code></pre>
+    <p>Integrate this into Jenkins or GitHub Actions. If a security test fails, the build should fail immediately.</p>
+
+    <h2>5. Secure Error Handling and Logging</h2>
+    <p>Information disclosure via error messages is a critical issue. If your API returns stack traces, you are exposing your framework, database version, and potential file paths. Configure your API to return a generic JSON error object. For debugging, use a unique <code>correlation_id</code>. Log the full stack trace on your internal server, but only show the <code>correlation_id</code> to the client.</p>
+
+    <h2>6. Rate Limiting and Brute Force Mitigation</h2>
+    <p>Implement rate limiting at multiple layers: by Auth token, by IP, and by API Key. Use tools like Redis to keep track of request counts in real-time. For high-security endpoints (like <code>/login</code>), implement an exponential back-off strategy for failed attempts. This makes brute-force attacks economically unfeasible.</p>
+
+    <h2>7. The Engineering Checklist</h2>
+    <ul>
+        <li><b>AuthZ check:</b> Does every request verify resource ownership?</li>
+        <li><b>Data Exposure:</b> Are sensitive fields (passwords, PII) explicitly excluded from the JSON response?</li>
+        <li><b>Schema Validation:</b> Is every request body validated against a strict schema?</li>
+        <li><b>Sensitive Logs:</b> Are passwords, tokens, and PII stripped from logs before being saved?</li>
+        <li><b>Automated Security Suite:</b> Does your CI/CD pipeline run security tests on every push?</li>
+    </ul>
+
+    <h2>Conclusion</h2>
+    <p>Building secure APIs is a discipline of consistent technical rigor. If you ignore security, you are creating technical debt that will be paid in data leaks and lost trust. If you need a comprehensive audit of your API security or want to build an automated testing framework that protects your business from day one, reach out to me for professional mentorship. We will build, break, and fix your architecture together.</p>
+</article>
+
+</body>
+</html>
