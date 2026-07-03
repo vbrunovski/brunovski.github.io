@@ -2,7 +2,7 @@
 layout: default
 ---
 test
-<img src="/assets/images/profile.jpg" alt="Vitali Brunovski" style="width:200px; border-radius:50%; margin-bottom:20px;">
+<img src="assets/images/profile.jpg" alt="Vitali Brunovski" style="width:200px; border-radius:50%; margin-bottom:20px;">
 
 # Vitali Brunovski
 ## Cybersecurity & API Security Mentor
